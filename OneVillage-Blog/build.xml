@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<project name='OneVillage-Blog' default='deploy' basedir='.'>
+
+	<!-- ========================================= -->
+
+	<target name='help'>
+		<echo>
+			RESTful Web Service - blog
+			
+			Requires:
+				1. Apache Wink
+				2. Tomcat (1.6.x)
+		</echo>
+	</target>
+
+	<!-- ========================================= -->
+
+	<target name='init'>
+		<property name='webcontent.dir' value='${basedir}/WebContent' />
+		<property name='build.dir' value='${basedir}/build' />
+		<property name='OneVillage.war' value='${build.dir}/OneVillage.war' />
+		
+
+		<!-- installation specific -->
+		<property name='resources.home' value='${basedir}/resources' />
+		<property name='junit.jar' value='${resources.home}/junit-4.8.1.jar' />
+		<property name="catalina.home" location= "C:/tomcat-blog" />
+
+		<path id='clt.classpath'>
+			<pathelement location='${basedir}/classes' />
+			<pathelement location='${junit.jar}' />
+			<fileset dir='${webcontent.dir}/WEB-INF/lib'>
+				<include name='**/*.jar' />
+			</fileset>
+		</path>
+
+		<path id='build.classpath'>
+			<pathelement location='${basedir}/classes' />
+			<pathelement location='${junit.jar}' />
+			<fileset dir='${webcontent.dir}/WEB-INF/lib'>
+				<include name='**/*.jar' />
+			</fileset>
+			<fileset dir='${catalina.home}/lib'>
+				<include name='**/*.jar' />
+			</fileset>
+		</path>
+	</target>
+
+	<!-- ========================================= -->
+
+	<target name='clean' depends='init'>
+		<delete dir='${build.dir}' />
+		<delete dir='${basedir}/classes' />
+		<mkdir dir='${basedir}/classes' />
+	</target>
+
+	<!-- ========================================= -->
+
+	<target name='compile' depends='init,clean'>
+		 <javac debug='on' fork='true' destdir='${basedir}/classes' classpathref='build.classpath' includeantruntime="false"> 
+		 	
+			 <src path='${basedir}/src'/> 
+		 	 <src path="${basedir}/test"/> 
+		</javac>
+		<copy todir="${basedir}/classes">
+			<fileset dir='${basedir}/src' excludes="**/*.java"/>
+		</copy>
+	</target>
+
+	<!-- ========================================= -->
+
+	<target name='war' depends='compile'>	
+		<mkdir dir='${build.dir}' />
+		<war destfile="${OneVillage.war}" webxml="${webcontent.dir}/WEB-INF/web.xml">
+			<webinf dir="${webcontent.dir}/WEB-INF" includes="**/*" />
+			<classes dir="${basedir}/classes" includes="**/*" excludes="**/onevillage/blog/client/*" />
+			<lib dir="${webcontent.dir}/WEB-INF/lib" includes="*.jar" />
+		</war>
+	</target>
+
+	<!-- ========================================= -->
+
+	<target name='deploy' depends='war'>
+		<copy todir='${catalina.home}/webapps' file='${OneVillage.war}' />
+	</target>
+
+</project>
